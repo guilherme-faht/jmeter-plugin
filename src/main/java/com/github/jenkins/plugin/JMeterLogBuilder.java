@@ -2,7 +2,6 @@ package com.github.jenkins.plugin;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -14,7 +13,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import com.github.jenkins.plugin.beans.StepResult;
-import com.github.jenkins.plugin.writer.HtmlReport;
+import com.github.jenkins.plugin.report.HtmlReport;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import hudson.Extension;
@@ -89,11 +88,11 @@ public class JMeterLogBuilder extends Builder {
 		File dir = new File(getPath());
 		File[] files = dir.listFiles();
 
-		if(files == null) {
+		if (files == null) {
 			listener.getLogger().println("Error: Not found log files");
 			return false;
 		}
-		
+
 		for (File file : files) {
 
 			if (!file.getName().endsWith(".log")) {
@@ -175,7 +174,7 @@ public class JMeterLogBuilder extends Builder {
 		public FormValidation doCheckJmeterHome(@QueryParameter String path) {
 
 			if (path == null || path.isEmpty()) {
-				return FormValidation.error(br.com.senior.erp.jenkins.jmeter.Messages
+				return FormValidation.error(com.github.jenkins.plugin.Messages
 						._JMeterBuilder_DescriptorImpl_errors_fieldRequired().toString());
 			}
 

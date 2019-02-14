@@ -1,4 +1,4 @@
-package com.github.jenkins.plugin.writer.html;
+package com.github.jenkins.plugin.report.writer.html;
 
 import java.util.HashMap;
 import java.util.Map;

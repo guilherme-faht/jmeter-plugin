@@ -1,4 +1,4 @@
-package com.github.jenkins.plugin.writer;
+package com.github.jenkins.plugin.report;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,8 +6,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.jenkins.plugin.writer.html.Element;
-import com.github.jenkins.plugin.writer.html.Style;
+import com.github.jenkins.plugin.report.writer.html.Element;
+import com.github.jenkins.plugin.report.writer.html.Style;
+import com.github.jenkins.plugin.report.writer.html.TableWriter;
 import com.google.common.io.Files;
 
 public class HtmlReport implements TableWriter {
@@ -82,13 +83,15 @@ public class HtmlReport implements TableWriter {
 
 		StringBuilder html = new StringBuilder();
 		html.append("<html>\n");
-		
+
 		html.append("\t<head>\n");
+		html.append("\t<meta name=\"hudson.model.DirectoryBrowserSupport.CSP\" ");
+		html.append("content=\"sandbox allow-same-origin allow-scripts; default-src 'self'; script-src * 'unsafe-eval'; img-src *; style-src * 'unsafe-inline'; font-src *\">");
 		for (Style style : styles) {
 			html.append(style.build());
 		}
 		html.append("\t</head>\n");
-		
+
 		html.append("\t<body>\n");
 		html.append(table.build());
 		html.append("\t</body>\n");

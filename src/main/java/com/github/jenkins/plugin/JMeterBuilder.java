@@ -228,12 +228,12 @@ public class JMeterBuilder extends Builder {
 			Path jmeterHomePath = Paths.get(jmeterHome);
 
 			if (jmeterHome == null || jmeterHome.isEmpty()) {
-				return FormValidation.error(br.com.senior.erp.jenkins.jmeter.Messages
+				return FormValidation.error(com.github.jenkins.plugin.Messages
 						._JMeterBuilder_DescriptorImpl_errors_fieldRequired().toString());
 			}
 
 			if (!Files.isDirectory(jmeterHomePath)) {
-				return FormValidation.error(br.com.senior.erp.jenkins.jmeter.Messages
+				return FormValidation.error(com.github.jenkins.plugin.Messages
 						._JMeterBuilder_DescriptorImpl_errors_invalidJMeterHome().toString());
 			}
 
@@ -243,7 +243,7 @@ public class JMeterBuilder extends Builder {
 		public FormValidation doCheckCommand(@QueryParameter String command) {
 
 			if (command == null || command.isEmpty()) {
-				return FormValidation.error(br.com.senior.erp.jenkins.jmeter.Messages
+				return FormValidation.error(com.github.jenkins.plugin.Messages
 						._JMeterBuilder_DescriptorImpl_errors_fieldRequired().toString());
 			}
 

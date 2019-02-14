@@ -1,4 +1,4 @@
-package com.github.jenkins.plugin.writer;
+package com.github.jenkins.plugin.report.writer.html;
 
 import java.io.File;
 import java.io.IOException;
