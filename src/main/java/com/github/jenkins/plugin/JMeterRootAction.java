@@ -8,6 +8,7 @@ public class JMeterRootAction implements RootAction {
 
 	@Override
 	public String getDisplayName() {
+		System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "sandbox allow-same-origin allow-scripts; default-src 'self'; script-src * 'unsafe-eval'; img-src *; style-src * 'unsafe-inline'; font-src *");
 		return "JMeter Plugin";
 	}
 
@@ -18,6 +19,6 @@ public class JMeterRootAction implements RootAction {
 
 	@Override
 	public String getUrlName() {
-		return "https://www.facebook.com";
+		return "https://github.com/guilherme-faht/jmeter-plugin";
 	}
 }

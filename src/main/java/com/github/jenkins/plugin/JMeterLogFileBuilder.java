@@ -27,19 +27,19 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
-public class JMeterLogBuilder extends Builder {
+public class JMeterLogFileBuilder extends Builder {
 
 	private static final String REPORT_TEMPLATE_PATH = "/report.html";
 
-	private String path;
+	private String file;
 
 	@DataBoundConstructor
-	public JMeterLogBuilder(String path) {
-		this.path = path;
+	public JMeterLogFileBuilder(String file) {
+		this.file = file;
 	}
 
-	public String getPath() {
-		return path;
+	public String getFile() {
+		return file;
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class JMeterLogBuilder extends Builder {
 		listener.getLogger().println("-----[JMeter Plugin Configuration]-----");
 		listener.getLogger().println("OPERACIONAL SYSTEM: " + System.getProperty("os.name"));
 		listener.getLogger().println("WORKSPACE: " + getWorkspace(build));
-		listener.getLogger().println("LOG PATH: " + getPath());
+		listener.getLogger().println("LOG FILE: " + getFile());
 		listener.getLogger().println("-----[JMeter Plugin Configuration]-----");
 
 		listener.getLogger().println("Start JMeter Log");
@@ -66,21 +66,12 @@ public class JMeterLogBuilder extends Builder {
 			return false;
 		}
 
-		File artifactsDir = build.getArtifactsDir();
+		File file = new File(getFile());
 
-		if (!artifactsDir.isDirectory()) {
-
-			boolean success = artifactsDir.mkdirs();
-
-			if (!success) {
-				listener.getLogger().println("Can't create artifacts directory at " + artifactsDir.getAbsolutePath());
-			}
-
+		if (!Files.exists(file.toPath())) {
+			listener.getLogger().println("Error: Not found log file");
 			return false;
 		}
-
-		File dir = new File(getPath());
-		File[] files = dir.listFiles();
 
 		HtmlReport rep = new HtmlReport(600, 100);
 		rep.addStyle("header", "Times", 16, "BI", "#FF0000", "#FFF1B2");
@@ -99,54 +90,54 @@ public class JMeterLogBuilder extends Builder {
 		rep.addRow();
 		rep.addCell("&nbsp", "center", "break", 2);
 
-		if (files == null) {
-			listener.getLogger().println("Error: Not found log files");
-			return false;
-		}
+		rep.addRow();
+		rep.addCell(file.getName().toUpperCase(), "left", "title", 1);
+		rep.addCell("RESULT", "center", "title", 1);
 
-		for (File file : files) {
+		List<StepResult> steps = new CsvToBeanBuilder<StepResult>(
+				new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8"))).withType(StepResult.class)
+						.build().parse();
 
-			if (!file.getName().endsWith(".log")) {
-				continue;
-			}
+		int fails = 0;
+
+		for (StepResult step : steps) {
 
 			rep.addRow();
-			rep.addCell(file.getName().toUpperCase(), "left", "title", 1);
-			rep.addCell("RESULT", "center", "title", 1);
+			rep.addCell(step.getLabel(), "left", "data", 1);
 
-			List<StepResult> steps = new CsvToBeanBuilder<StepResult>(
-					new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")))
-							.withType(StepResult.class).build().parse();
-
-			int fails = 0;
-
-			for (StepResult step : steps) {
-
-				rep.addRow();
-				rep.addCell(step.getLabel(), "left", "data", 1);
-
-				if (step.getSuccess()) {
-					rep.addCell("OK", "center", "success", 1);
-				} else {
-					rep.addCell("FAIL", "center", "fail", 1);
-					fails++;
-				}
-			}
-
-			if (fails > 0) {
-				rep.addRow();
-				rep.addCell("FAIL (" + fails + ")", "center", "ResultFail", 2);
-				result = false;
+			if (step.getSuccess()) {
+				rep.addCell("OK", "center", "success", 1);
 			} else {
-				rep.addRow();
-				rep.addCell("SUCCESS", "center", "ResultSuccess", 2);
+				rep.addCell("FAIL", "center", "fail", 1);
+				fails++;
 			}
-
-			Files.copy(file.toPath(), Paths.get(artifactsDir.getCanonicalPath() + File.separator + file.getName()));
-			Files.delete(file.toPath());
 		}
 
-		rep.save(new File(artifactsDir.getCanonicalPath() + REPORT_TEMPLATE_PATH));
+		if (fails > 0) {
+			rep.addRow();
+			rep.addCell("FAIL (" + fails + ")", "center", "ResultFail", 2);
+			result = false;
+		} else {
+			rep.addRow();
+			rep.addCell("SUCCESS", "center", "ResultSuccess", 2);
+		}
+
+		File artifactsDir = build.getArtifactsDir();
+
+		if (!artifactsDir.isDirectory()) {
+
+			boolean success = artifactsDir.mkdirs();
+
+			if (!success) {
+				listener.getLogger().println("Can't create artifacts directory at " + artifactsDir.getAbsolutePath());
+			}
+		}
+
+		String path = artifactsDir.getCanonicalPath() + REPORT_TEMPLATE_PATH;
+		rep.save(new File(path));
+
+		Files.copy(file.toPath(), Paths.get(artifactsDir.getCanonicalPath() + File.separator + file.getName()));
+		Files.delete(file.toPath());
 
 		return result;
 	}
@@ -163,7 +154,7 @@ public class JMeterLogBuilder extends Builder {
 
 	public boolean isPathExists() {
 
-		return Files.exists(Paths.get(getPath()));
+		return Files.exists(Paths.get(getFile()));
 	}
 
 	@Extension
@@ -176,12 +167,12 @@ public class JMeterLogBuilder extends Builder {
 
 		@Override
 		public String getDisplayName() {
-			return "JMeter Log Path";
+			return "JMeter Log File";
 		}
 
-		public FormValidation doCheckJmeterHome(@QueryParameter String path) {
+		public FormValidation doCheckJmeterHome(@QueryParameter String file) {
 
-			if (path == null || path.isEmpty()) {
+			if (file == null || file.isEmpty()) {
 				return FormValidation.error(com.github.jenkins.plugin.Messages
 						._JMeterBuilder_DescriptorImpl_errors_fieldRequired().toString());
 			}
